@@ -175,8 +175,7 @@ rs_mdfour64(rs_mdfour_t * m, const void *p)
  * There are some nice endianness routines in glib, including assembler
  * variants. If we ever depended on glib, then it could be good to use them
  * instead. */
-inline static void
-copy4( /* @out@ */ unsigned char *out, uint32_t const x)
+__inline static void copy4( /* @out@ */ unsigned char *out, uint32_t const x)
 {
     out[0] = x;
     out[1] = x >> 8;
@@ -249,7 +248,7 @@ rs_mdfour_block(rs_mdfour_t *md, void const *p)
  *
  * So if the input is not already aligned correctly, copy it to an
  * aligned buffer first.  */
-inline static void
+__inline static void
 rs_mdfour_block(rs_mdfour_t *md, void const *p)
 {
     unsigned long ptrval = (unsigned long) p;

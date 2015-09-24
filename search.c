@@ -55,21 +55,25 @@
 
 static void swap(rs_target_t *t1, rs_target_t *t2) {
     unsigned short ts = t1->t;
+	int ti;
     t1->t = t2->t;
     t2->t = ts;
 
-    int ti = t1->i;
+    ti = t1->i;
     t1->i = t2->i;
     t2->i = ti;
 }
 
 static int rs_compare_targets(rs_target_t const *t1, rs_target_t const *t2, rs_signature_t * sums) {
-    int v = (int) t1->t - (int) t2->t;
+    rs_weak_sum_t w1;
+	rs_weak_sum_t w2;
+
+	int v = (int) t1->t - (int) t2->t;
     if (v != 0)
 	return v;
 
-    rs_weak_sum_t w1 = sums->block_sigs[t1->i].weak_sum;
-    rs_weak_sum_t w2 = sums->block_sigs[t2->i].weak_sum;
+    w1= sums->block_sigs[t1->i].weak_sum;
+    w2 = sums->block_sigs[t2->i].weak_sum;
 
     v = (w1 > w2) - (w1 < w2);
     if (v != 0)
@@ -169,17 +173,23 @@ rs_search_for_block(rs_weak_sum_t weak_sum,
                     rs_signature_t const *sig, rs_stats_t * stats,
                     rs_long_t * match_where)
 {
-    /* Caller must have called rs_build_hash_table() by now */
+    rs_strong_sum_t strong_sum;
+	int got_strong = 0;
+	int hash_tag = gettag(weak_sum);
+	rs_tag_table_entry_t *bucket = &(sig->tag_table[hash_tag]);
+	int l = bucket->l;
+	int r = bucket->r + 1;
+	int v = 1;
+	int token;
+
+	/* Caller must have called rs_build_hash_table() by now */
     if (!sig->tag_table)
         rs_fatal("Must have called rs_build_hash_table() by now");
 
-    rs_strong_sum_t strong_sum;
-    int got_strong = 0;
-    int hash_tag = gettag(weak_sum);
-    rs_tag_table_entry_t *bucket = &(sig->tag_table[hash_tag]);
-    int l = bucket->l;
-    int r = bucket->r + 1;
-    int v = 1;
+    
+    
+    
+    
 
     if (l == NULL_TAG)
 	return 0;
@@ -235,7 +245,7 @@ rs_search_for_block(rs_weak_sum_t weak_sum,
 	    got_strong = 1;
 	}
 	v = memcmp(strong_sum, b->strong_sum, sig->strong_sum_len);
-	int token = b->i;
+	token = b->i;
 	*match_where = (rs_long_t)(token - 1) * sig->block_len;
     }
 

@@ -98,7 +98,7 @@ void rs_filebuf_free(rs_filebuf_t *fb)
 rs_result rs_infilebuf_fill(rs_job_t *job, rs_buffers_t *buf,
                             void *opaque)
 {
-    int                     len;
+    size_t                  len;
     rs_filebuf_t            *fb = (rs_filebuf_t *) opaque;
     FILE                    *f = fb->f;
         
@@ -156,7 +156,7 @@ rs_result rs_infilebuf_fill(rs_job_t *job, rs_buffers_t *buf,
  */
 rs_result rs_outfilebuf_drain(rs_job_t *job, rs_buffers_t *buf, void *opaque)
 {
-    int present;
+    size_t present;
     rs_filebuf_t *fb = (rs_filebuf_t *) opaque;
     FILE *f = fb->f;
 

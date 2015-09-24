@@ -126,12 +126,12 @@ static rs_result rs_delta_s_scan(rs_job_t *job);
 static rs_result rs_delta_s_flush(rs_job_t *job);
 static rs_result rs_delta_s_end(rs_job_t *job);
 void rs_getinput(rs_job_t *job);
-inline int rs_findmatch(rs_job_t *job, rs_long_t *match_pos, size_t *match_len);
-inline rs_result rs_appendmatch(rs_job_t *job, rs_long_t match_pos, size_t match_len);
-inline rs_result rs_appendmiss(rs_job_t *job, size_t miss_len);
-inline rs_result rs_appendflush(rs_job_t *job);
-inline rs_result rs_processmatch(rs_job_t *job);
-inline rs_result rs_processmiss(rs_job_t *job);
+__inline int rs_findmatch(rs_job_t *job, rs_long_t *match_pos, size_t *match_len);
+__inline rs_result rs_appendmatch(rs_job_t *job, rs_long_t match_pos, size_t match_len);
+__inline rs_result rs_appendmiss(rs_job_t *job, size_t miss_len);
+__inline rs_result rs_appendflush(rs_job_t *job);
+__inline rs_result rs_processmatch(rs_job_t *job);
+__inline rs_result rs_processmiss(rs_job_t *job);
 
 /**
  * \brief Get a block of data if possible, and see if it matches.
@@ -255,7 +255,7 @@ void rs_getinput(rs_job_t *job) {
  * forwards beyond the block boundaries. Extending backwards would require
  * decrementing scoop_pos as appropriate.
  */
-inline int rs_findmatch(rs_job_t *job, rs_long_t *match_pos, size_t *match_len) {
+__inline int rs_findmatch(rs_job_t *job, rs_long_t *match_pos, size_t *match_len) {
     /* calculate the weak_sum if we don't have one */
     if (job->weak_sum.count == 0) {
         /* set match_len to min(block_len, scan_avail) */
@@ -282,7 +282,7 @@ inline int rs_findmatch(rs_job_t *job, rs_long_t *match_pos, size_t *match_len) 
 /**
  * Append a match at match_pos of length match_len to the delta, extending
  * a previous match if possible, or flushing any previous miss/match. */
-inline rs_result rs_appendmatch(rs_job_t *job, rs_long_t match_pos, size_t match_len)
+__inline rs_result rs_appendmatch(rs_job_t *job, rs_long_t match_pos, size_t match_len)
 {
     rs_result result=RS_DONE;
     
@@ -313,7 +313,7 @@ inline rs_result rs_appendmatch(rs_job_t *job, rs_long_t match_pos, size_t match
  * 
  * This also breaks misses up into block_len segments to avoid accumulating
  * too much in memory. */
-inline rs_result rs_appendmiss(rs_job_t *job, size_t miss_len)
+__inline rs_result rs_appendmiss(rs_job_t *job, size_t miss_len)
 {
     rs_result result=RS_DONE;
     
@@ -330,7 +330,7 @@ inline rs_result rs_appendmiss(rs_job_t *job, size_t miss_len)
 /**
  * Flush any accumulating hit or miss, appending it to the delta.
  */
-inline rs_result rs_appendflush(rs_job_t *job)
+__inline rs_result rs_appendflush(rs_job_t *job)
 {
     /* if last is a match, emit it and reset last by resetting basis_len */
     if (job->basis_len) {
@@ -361,7 +361,7 @@ inline rs_result rs_appendflush(rs_job_t *job)
  * scoop_pos appropriately. In the future this could be used for something
  * like context compressing of miss data. Note that it also calls
  * rs_tube_catchup to output any pending output. */
-inline rs_result rs_processmatch(rs_job_t *job)
+__inline rs_result rs_processmatch(rs_job_t *job)
 {
     job->scoop_avail-=job->scoop_pos;
     job->scoop_next+=job->scoop_pos;
@@ -383,7 +383,7 @@ inline rs_result rs_processmatch(rs_job_t *job)
  * 
  * In the future this could do compression of miss data before outputing
  * it. */
-inline rs_result rs_processmiss(rs_job_t *job)
+__inline rs_result rs_processmiss(rs_job_t *job)
 {
     rs_tube_copy(job, job->scoop_pos);
     job->scoop_pos=0;
@@ -445,11 +445,12 @@ static rs_result rs_delta_s_header(rs_job_t *job)
  */
 rs_job_t *rs_delta_begin(rs_signature_t *sig)
 {
-    /* Caller must have called rs_build_hash_table() by now */
+	rs_job_t *job;
+
+	/* Caller must have called rs_build_hash_table() by now */
     if (!sig->tag_table)
         rs_fatal("Must call rs_build_hash_table() prior to calling rs_delta_begin()");
 
-    rs_job_t *job;
 
     job = rs_job_new("delta", rs_delta_s_header);
     job->signature = sig;
